@@ -11,17 +11,17 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="300dp"
-        android:src="@drawable/image_login_screen"
-        android:layout_marginTop="50dp"/>
+        android:layout_marginTop="50dp"
+        android:src="@drawable/loginstudent" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="monospace"
         android:text="Student Login"
-        android:fontFamily="serif"
         android:textAlignment="center"
         android:textColor="@color/main_500"
-        android:textSize="40sp"
+        android:textSize="35sp"
         android:textStyle="bold|italic" />
 
     <com.google.android.material.textfield.TextInputLayout
