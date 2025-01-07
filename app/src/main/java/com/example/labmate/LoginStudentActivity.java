@@ -26,8 +26,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class LoginStudentActivity extends AppCompatActivity implements TextWatcher {
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+public class LoginStudentActivity extends AppCompatActivity implements TextWatcher {
+    private static final Logger log = LogManager.getLogger(LoginStudentActivity.class);
     private TextInputLayout emailInputLayout, passwordInputLayout;
     private String loginEmail;
     private FirebaseAuth mAuth;
@@ -39,7 +42,6 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_student);
-
         init();
     }
 
@@ -84,8 +86,7 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Log.d("aryanranderiya","login email "+loginEmail);
-
+                            Log.d("auth","login email "+loginEmail);
                             searchEnrollment();
                         } else {
                             Toast.makeText(getApplicationContext(), "Authentication failed.", Toast.LENGTH_SHORT).show();
@@ -98,10 +99,8 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
 
     private void searchEnrollment() {
         studentsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                 for (DataSnapshot studentSnapshot : dataSnapshot.getChildren()) {
 
                     String studentEmail = studentSnapshot.child("student_email").getValue(String.class);
@@ -109,11 +108,13 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
                         enrollmentNo = studentSnapshot.getKey();
                         String hardwareAddress = fetchUniqueHardwareID();
                         storeMacAddressInFirebase(enrollmentNo, hardwareAddress);
-                        Log.d("aryanranderiya","uniqueID: "+hardwareAddress);
+                        Log.d("auth","uniqueID: "+hardwareAddress);
                         return;
                     }
                 }
+
                 Toast.makeText(getApplicationContext(), "Email not found.", Toast.LENGTH_SHORT).show();
+                closeProgressDialog();
             }
 
             @Override
@@ -135,7 +136,6 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
 
     private void storeMacAddressInFirebase(String enrollmentNo, String macAddress) {
         DatabaseReference enrollmentRef = studentsRef.child(enrollmentNo);
-
 
         enrollmentRef.child("hardware_id").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
