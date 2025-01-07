@@ -143,19 +143,9 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String existingHardwareId = dataSnapshot.getValue(String.class);
-                if (existingHardwareId == null) {
-                    enrollmentRef.child("hardware_id").setValue(macAddress);
-                    startActivity(new Intent(getApplicationContext(), SubmitAttendanceActivity.class));
-                    Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-                    closeProgressDialog();
-                }
-                else{
-                    if(macAddress!=existingHardwareId){
-                        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-                        FirebaseAuth.getInstance().signOut();
-                        Toast.makeText(LoginStudentActivity.this, "Cannot login on another device!", Toast.LENGTH_SHORT).show();
-                    }
-                }
+                startActivity(new Intent(getApplicationContext(), SubmitAttendanceActivity.class));
+                Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+                closeProgressDialog();
             }
 
             @Override
