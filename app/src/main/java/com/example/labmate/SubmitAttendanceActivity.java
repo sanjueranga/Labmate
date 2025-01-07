@@ -27,13 +27,13 @@ public class SubmitAttendanceActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submit_attendance);
-
         Init();
         checkWifi();
     }
 
     private void checkWifi() {
-        if (isConnectedToSpecificNetwork("90:4c:81:d9:48:93")) {
+        // need to get BSSID from db
+        if (isConnectedToSpecificNetwork("02:00:00:00:00:00")) {
             startActivity(new Intent(getApplicationContext(), SelectAttendanceActivity.class));
         } else {
             Toast.makeText(this, "Not connected to the University Network.", Toast.LENGTH_LONG).show();
@@ -46,11 +46,9 @@ public class SubmitAttendanceActivity extends AppCompatActivity {
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             String currentBSSID = wifiInfo.getBSSID();
 
-            Log.d("aryanranderiya","fetched BSSID of phone: "+currentBSSID);
+            Log.d("checkWifi","fetched BSSID of phone: "+ currentBSSID);
 
-            if (specificBSSID.equals(currentBSSID)) {
-                return true;
-            }
+            return specificBSSID.equals(currentBSSID);
         }
         return false;
     }
@@ -62,6 +60,7 @@ public class SubmitAttendanceActivity extends AppCompatActivity {
                     logOut();
                 }
             });
+            Log.d("checkWifi","Init Complete");
         }
 
         public void logOut() {

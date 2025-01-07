@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "409230153070",
+    "firebase_url": "https://labmate-b8768-default-rtdb.firebaseio.com",
+    "project_id": "labmate-b8768",
+    "storage_bucket": "labmate-b8768.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409230153070:android:f06fd879b10d8b8721dd7f",
+        "android_client_info": {
+          "package_name": "com.example.labmate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhwcGgVvTm8L9OZp_9RDDdQkJM9gJNeBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
