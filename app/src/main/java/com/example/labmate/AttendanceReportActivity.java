@@ -109,6 +109,7 @@ public class AttendanceReportActivity extends AppCompatActivity{
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("final report",dataSnapshot.toString());
                 if (dataSnapshot.exists()) {
                     try {
                         File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -123,6 +124,7 @@ public class AttendanceReportActivity extends AppCompatActivity{
                         Intent intent = getIntent();
                         String sessionId = intent.getStringExtra("sessionId");
 
+                        Log.d("final report","session id" +sessionId);
                         for (DataSnapshot dataSnapshot1 : dataSnapshot.child("AttendanceReport").child(sessionId).getChildren()) {
                             Row subjectInfoRow = sheet.createRow(rowNum++);
                             String key = dataSnapshot1.getKey();

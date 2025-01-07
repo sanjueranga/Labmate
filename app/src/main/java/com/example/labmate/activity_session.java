@@ -4,6 +4,7 @@ import static org.apache.poi.util.StringUtil.length;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +38,7 @@ public class activity_session extends AppCompatActivity {
         Glide.with(this).asGif().load(R.drawable.loading).into(gifImageView);
         Intent intent = getIntent();
         if (intent != null) {
-            subject = intent.getStringExtra("subject");
+            subject = intent.getStringExtra("courseCode");
         }
         createSession();
 
@@ -46,21 +47,22 @@ public class activity_session extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(),AttendanceReportActivity.class);
                 intent.putExtra("sessionId", sessionId);
+                Log.d("session","session id " +sessionId);
                 startActivity(intent);
             }
     });
         }
 
     private void createSession() {
-
         DatabaseReference attendanceReportRef = FirebaseDatabase.getInstance().getReference("AttendanceReport");
-
         attendanceReportRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("report","data date : "+dataSnapshot);
                 if (dataSnapshot.exists()) {
                     long nextSessionId = dataSnapshot.getChildrenCount() + 1;
                     sessionId = "attendance_session_id_" + nextSessionId;
+                    Log.d("report","nextSessionId : "+nextSessionId);
                     DatabaseReference newReportRef = attendanceReportRef.child(sessionId);
 
                     Date currentDate = new Date();
@@ -81,11 +83,15 @@ public class activity_session extends AppCompatActivity {
                         endTime=endTime-12;
                     }
                     String s_endTime=endTime+" "+amPm;
+                    Log.d("report","period date : "+formattedDate);
+                    Log.d("report","startTime : "+startTime);
+                    Log.d("report","s_endTime : "+s_endTime);
+                    Log.d("report","subject_name: "+subject);
 
                     newReportRef.child("period_date").setValue(formattedDate);
                     newReportRef.child("period_end_time").setValue(startTime);
                     newReportRef.child("period_start_time").setValue(s_endTime);
-                    newReportRef.child("subject_name").setValue(subject);
+                    newReportRef.child("course_code").setValue(subject);
                 }
             }
 

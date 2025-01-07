@@ -42,24 +42,29 @@ public class TakeAttendanceActivity extends AppCompatActivity {
                     saveAttendanceSession(selectedSubject);
 
                     Intent intent = new Intent(getApplicationContext(), activity_session.class);
-                    intent.putExtra("Course Code", selectedSubject);
+
+                    intent.putExtra("courseCode", selectedSubject);
+
                     startActivity(intent);
                 } else {
-                    Toast.makeText(TakeAttendanceActivity.this, "Please select all three options", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TakeAttendanceActivity.this, "Please select option", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
     private boolean isSelectionValid() {
-        return (subjectSpinner.getSelectedItemPosition() > 0);
+        return
+                (subjectSpinner.getSelectedItemPosition() > 0);
     }
 
     private void Init() {
         subjectSpinner = findViewById(R.id.subjectSpinner);
+
         btn_startAttendanceSession = findViewById(R.id.btn_startAttendanceSession);
+
         subjectArray = getResources().getStringArray(R.array.subject_array);
-        ArrayAdapter<String> subjectArrayAdapter = new ArrayAdapter<>(this, R.layout.spinner_list, subjectArray);
+        ArrayAdapter<String> subjectArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, subjectArray);
         subjectArrayAdapter.setDropDownViewResource(R.layout.spinner_list);
         subjectSpinner.setAdapter(subjectArrayAdapter);
         subjectSpinner.setSelection(0, false);

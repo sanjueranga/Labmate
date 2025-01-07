@@ -42,19 +42,20 @@ public class SelectAttendanceActivity extends AppCompatActivity {
     private void recordAttendance() {
         Log.d("record","current User"+ mAuth.getCurrentUser());
         String userId = mAuth.getCurrentUser().getUid();
+        String userEmail = mAuth.getCurrentUser().getEmail();
+        Log.d("record","current User email"+ userId);
         String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
         // Create attendance record
         AttendanceRecord record = new AttendanceRecord(
-                userId,
+                userEmail,
                 currentDate,
                 currentTime
         );
         Log.d("record","record:"+ record);
         // Save to Firebase
         mDatabase.child("attendance")
-                .child(currentDate)
                 .child(userId)
                 .setValue(record)
                 .addOnSuccessListener(aVoid -> {
@@ -73,12 +74,12 @@ public class SelectAttendanceActivity extends AppCompatActivity {
 
     // Attendance record model class
     private static class AttendanceRecord {
-        public String userId;
+        public String userEmail;
         public String date;
         public String time;
 
-        public AttendanceRecord(String userId, String date, String time) {
-            this.userId = userId;
+        public AttendanceRecord(String email, String date, String time) {
+            this.userEmail = email;
             this.date = date;
             this.time = time;
         }
