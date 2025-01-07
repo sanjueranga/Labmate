@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -44,8 +45,18 @@ public class SelectAttendanceActivity extends AppCompatActivity {
         String userId = mAuth.getCurrentUser().getUid();
         String userEmail = mAuth.getCurrentUser().getEmail();
         Log.d("record","current User email"+ userId);
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+        String currentDate = new SimpleDateFormat("dd/MM/yy", Locale.getDefault()).format(new Date());
+
+        Calendar calendar = Calendar.getInstance();
+        String amPm;
+        if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
+            amPm = "AM";
+        } else {
+            amPm = "PM";
+        }
+        String currentTime=calendar.get(Calendar.HOUR_OF_DAY)+" "+amPm;
+
+//        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
         // Create attendance record
         AttendanceRecord record = new AttendanceRecord(
