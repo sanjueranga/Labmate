@@ -35,7 +35,6 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
     private DatabaseReference studentsRef;
     private String enrollmentNo;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +42,6 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
 
         init();
     }
-
 
     private void init() {
         Button loginButton = findViewById(R.id.btn_login);

@@ -11,14 +11,15 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="300dp"
+        android:layout_marginTop="50dp"
         android:src="@drawable/image_login_screen"
-        android:layout_marginTop="50dp"/>
+        app:srcCompat="@drawable/image_login_screen" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Student Login"
         android:fontFamily="serif"
+        android:text="Login as a Student"
         android:textAlignment="center"
         android:textColor="@color/main_500"
         android:textSize="40sp"
