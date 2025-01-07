@@ -58,5 +58,7 @@
     <color name="green">#39b548</color>
     <color name="red_ticket">#C84F48</color>
 
+    <!-- Maroon color -->
+    <color name="maroon">#800000</color>
 
 </resources>
