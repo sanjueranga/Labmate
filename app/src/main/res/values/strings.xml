@@ -48,14 +48,13 @@
     </string-array>
 
     <string-array name="subject_array">
-        <item>Select Subject: ‎ ‎ ‎ ‎ ‎ ‎‎ ‎‎‎‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎
+        <item>Select Course: ‎ ‎ ‎ ‎ ‎ ‎‎ ‎‎‎‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎
             ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎
             ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎   ▼</item>
-        <item>Java</item>
-        <item>Python</item>
-        <item>C++</item>
-        <item>C</item>
-        <item>Data Structures</item>
+        <item>ITC1001 - CCNA</item>
+        <item>ITC1011 - CEBCS</item>
+        <item>ITC2001 - Data Analysis</item>
+        <item>ITC2012 - DITUP</item>
     </string-array>
 
     <string name="title_activity_select_attendance">activity_select_attendance</string>

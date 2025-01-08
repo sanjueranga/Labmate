@@ -23,7 +23,7 @@ import java.util.Date;
 import com.bumptech.glide.Glide;
 
 public class activity_session extends AppCompatActivity {
-    String branch, division, group, subject;
+    String subject;
     private String sessionId;
 
     @Override
@@ -37,9 +37,6 @@ public class activity_session extends AppCompatActivity {
         Glide.with(this).asGif().load(R.drawable.loading).into(gifImageView);
         Intent intent = getIntent();
         if (intent != null) {
-            branch = intent.getStringExtra("branch");
-            division = intent.getStringExtra("division");
-            group = intent.getStringExtra("group");
             subject = intent.getStringExtra("subject");
         }
         createSession();
@@ -85,9 +82,6 @@ public class activity_session extends AppCompatActivity {
                     }
                     String s_endTime=endTime+" "+amPm;
 
-                    newReportRef.child("branch").setValue(branch);
-                    newReportRef.child("division").setValue(division.charAt(length(division)-1)+"");
-                    newReportRef.child("group").setValue(group.charAt(length(group)-1)+"");
                     newReportRef.child("period_date").setValue(formattedDate);
                     newReportRef.child("period_end_time").setValue(startTime);
                     newReportRef.child("period_start_time").setValue(s_endTime);

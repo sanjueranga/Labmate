@@ -19,25 +19,43 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class SubmitAttendanceActivity extends AppCompatActivity {
     Button btn_logout;
-
+    private DatabaseReference mDatabase;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submit_attendance);
-
         Init();
-        checkWifi();
+        locationAccess();
     }
 
     private void checkWifi() {
-        if (isConnectedToSpecificNetwork("90:4c:81:d9:48:93")) {
-            startActivity(new Intent(getApplicationContext(), SelectAttendanceActivity.class));
-        } else {
-            Toast.makeText(this, "Not connected to the University Network.", Toast.LENGTH_LONG).show();
-        }
+        mDatabase.child("attendance_sessions").child("UniversityBssid").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                String savedBSSID = dataSnapshot.getValue(String.class);
+
+                if (savedBSSID != null && isConnectedToSpecificNetwork(savedBSSID)) {
+                    Log.d("Fetched SSID",savedBSSID);
+                    startActivity(new Intent(getApplicationContext(), SelectAttendanceActivity.class));
+                } else {
+                    Toast.makeText(SubmitAttendanceActivity.this, "Not connected to the University Network.", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(SubmitAttendanceActivity.this, "Failed to fetch network information. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private boolean isConnectedToSpecificNetwork(String specificBSSID) {
@@ -46,36 +64,37 @@ public class SubmitAttendanceActivity extends AppCompatActivity {
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             String currentBSSID = wifiInfo.getBSSID();
 
-            Log.d("aryanranderiya","fetched BSSID of phone: "+currentBSSID);
+            Log.d("SubmitAttendance", "Fetched BSSID of phone: " + currentBSSID);
 
-            if (specificBSSID.equals(currentBSSID)) {
-                return true;
-            }
+            return specificBSSID.equals(currentBSSID);
         }
         return false;
     }
-        private void Init () {
-            btn_logout = findViewById(R.id.btn_logout);
-            btn_logout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    logOut();
-                }
-            });
-        }
 
-        public void logOut() {
-            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-            FirebaseAuth.getInstance().signOut();
-        }
-
-        public void locationAccess(){
-            if (hasLocationPermissions()) {
-                checkWifi();
-            } else {
-                requestLocationPermissions();
+    private void Init () {
+        btn_logout = findViewById(R.id.btn_logout);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        btn_logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                logOut();
             }
+        });
+        Log.d("SubmitAttendance", "Init Complete");
+    }
+
+    public void logOut() {
+        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+        FirebaseAuth.getInstance().signOut();
+    }
+
+    private void locationAccess(){
+        if (hasLocationPermissions()) {
+            checkWifi();
+        } else {
+            requestLocationPermissions();
         }
+    }
 
     private boolean hasLocationPermissions() {
         return ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -100,5 +119,5 @@ public class SubmitAttendanceActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please enable Location permissions", Toast.LENGTH_SHORT).show();
             }
         }
-        }
     }
+}

@@ -123,6 +123,4 @@ public class LoginFacultyActivity extends AppCompatActivity implements TextWatch
         emailInputLayout.setError(null);
         passwordInputLayout.setError(null);
     }
-
-
 }

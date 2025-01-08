@@ -2,18 +2,26 @@ package com.example.labmate;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class TakeAttendanceActivity extends AppCompatActivity {
-    Spinner branchSpinner,groupSpinner,divisionSpinner,subjectSpinner;
+    Spinner subjectSpinner;
     Button btn_startAttendanceSession;
-    String[] branchArray,divisionArray, groupArray, subjectArray;
+    String[] subjectArray;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,19 +37,12 @@ public class TakeAttendanceActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isSelectionValid()) {
-
-                    String selectedBranch = branchSpinner.getSelectedItem().toString();
-                    String selectedDivision = divisionSpinner.getSelectedItem().toString();
-                    String selectedGroup = groupSpinner.getSelectedItem().toString();
                     String selectedSubject = subjectSpinner.getSelectedItem().toString();
 
+                    saveAttendanceSession(selectedSubject);
+
                     Intent intent = new Intent(getApplicationContext(), activity_session.class);
-
-                    intent.putExtra("branch", selectedBranch);
-                    intent.putExtra("division", selectedDivision);
-                    intent.putExtra("group", selectedGroup);
-                    intent.putExtra("subject", selectedSubject);
-
+                    intent.putExtra("Course Code", selectedSubject);
                     startActivity(intent);
                 } else {
                     Toast.makeText(TakeAttendanceActivity.this, "Please select all three options", Toast.LENGTH_SHORT).show();
@@ -51,43 +52,40 @@ public class TakeAttendanceActivity extends AppCompatActivity {
     }
 
     private boolean isSelectionValid() {
-        return (branchSpinner.getSelectedItemPosition() > 0) &&
-                (subjectSpinner.getSelectedItemPosition() > 0) &&
-                (groupSpinner.getSelectedItemPosition() > 0) &&
-                (divisionSpinner.getSelectedItemPosition() > 0);
+        return (subjectSpinner.getSelectedItemPosition() > 0);
     }
 
     private void Init() {
-        branchSpinner = findViewById(R.id.branchSpinner);
-        groupSpinner = findViewById(R.id.groupSpinner);
-        divisionSpinner = findViewById(R.id.divisionSpinner);
         subjectSpinner = findViewById(R.id.subjectSpinner);
-
         btn_startAttendanceSession = findViewById(R.id.btn_startAttendanceSession);
-        
-        branchArray = getResources().getStringArray(R.array.branch_array);
-        ArrayAdapter<String> branchArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, branchArray);
-        branchArrayAdapter.setDropDownViewResource(R.layout.spinner_list);
-        branchSpinner.setAdapter(branchArrayAdapter);
-        branchSpinner.setSelection(0, false);
-
-        divisionArray = getResources().getStringArray(R.array.division_array);
-        ArrayAdapter<String> divisionArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, divisionArray);
-        divisionArrayAdapter.setDropDownViewResource(R.layout.spinner_list);
-        divisionSpinner.setAdapter(divisionArrayAdapter);
-        divisionSpinner.setSelection(0, false);
-
-        groupArray = getResources().getStringArray(R.array.group_array);
-        ArrayAdapter<String> groupArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, groupArray);
-        groupArrayAdapter.setDropDownViewResource(R.layout.spinner_list);
-        groupSpinner.setAdapter(groupArrayAdapter);
-        groupSpinner.setSelection(0, false);
-
         subjectArray = getResources().getStringArray(R.array.subject_array);
-        ArrayAdapter<String> subjectArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, subjectArray);
+        ArrayAdapter<String> subjectArrayAdapter = new ArrayAdapter<>(this, R.layout.spinner_list, subjectArray);
         subjectArrayAdapter.setDropDownViewResource(R.layout.spinner_list);
         subjectSpinner.setAdapter(subjectArrayAdapter);
         subjectSpinner.setSelection(0, false);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
+    private void saveAttendanceSession(String courseCode) {
+        String currentBSSID = getCurrentBSSID();
+        if (currentBSSID != null) {
+            mDatabase.child("attendance_sessions")
+                    .child("UniversityBssid")
+                    .setValue(currentBSSID)
+                    .addOnSuccessListener(aVoid -> Log.d("TakeAttendance", "BSSID saved successfully"))
+                    .addOnFailureListener(e -> Log.e("TakeAttendance", "Failed to save BSSID: " + e.getMessage()));
+        } else {
+            Toast.makeText(this, "Unable to fetch Wi-Fi BSSID. Make sure you are connected to a network.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String getCurrentBSSID() {
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager != null) {
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            return wifiInfo.getBSSID();
+        }
+        return null;
+    }
 }
