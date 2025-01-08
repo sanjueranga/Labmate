@@ -54,12 +54,13 @@
             android:textColor="@color/purple_200"
             android:textSize="20sp"
             android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/text_students_number"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:ems="10"
-                android:text="50"
+                android:text="20"
                 android:textAlignment="center"
                 android:textColor="@color/purple_200"
                 android:textSize="20sp"
@@ -86,17 +87,18 @@
             android:textSize="20sp"
             android:textStyle="bold"
             />
+
             <TextView
                 android:id="@+id/text_present_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:ems="10"
-                android:text="30"
+                android:text="12"
                 android:textAlignment="center"
                 android:textColor="@color/green"
                 android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_weight="1" />
+                android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
@@ -117,12 +119,13 @@
             android:textColor="@color/red_full"
             android:textSize="20sp"
             android:textStyle="bold"/>
+
             <TextView
                 android:id="@+id/text_absent_number"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:text="20"
+                android:text="10"
                 android:textAlignment="center"
                 android:textColor="@color/red_full"
                 android:textSize="20sp"

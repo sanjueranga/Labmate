@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.poi.ss.usermodel.*;
@@ -49,6 +50,14 @@ public class AttendanceReportActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         firebaseDatabase = FirebaseDatabase.getInstance();
         sdf = new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.US);
+
+        // Find TextView elements
+        TextView studentsNumberText = findViewById(R.id.text_students_number);
+        TextView presentNumberText = findViewById(R.id.text_present_number);
+        TextView absentNumberText = findViewById(R.id.text_absent_number);
+
+        // Populate attendance data on activity render
+        populateAttendanceCounts(studentsNumberText, presentNumberText, absentNumberText);
 
         downloadButton.setOnClickListener(view -> {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -139,6 +148,82 @@ public class AttendanceReportActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     Log.e("Export Error", e.getMessage(), e);
                     Toast.makeText(getApplicationContext(), "Failed to create Excel file", Toast.LENGTH_SHORT).show();
+                } finally {
+                    progressDialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                progressDialog.dismiss();
+                Toast.makeText(getApplicationContext(), "Failed to retrieve data", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void populateAttendanceCounts(TextView studentsNumberText, TextView presentNumberText, TextView absentNumberText) {
+        Intent intent = getIntent();
+        String sessionId = intent.getStringExtra("sessionId");
+
+        if (sessionId == null || sessionId.isEmpty()) {
+            Toast.makeText(this, "Invalid session ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressDialog.setMessage("Loading data...");
+        progressDialog.show();
+
+        DatabaseReference databaseReference = firebaseDatabase.getReference();
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                try {
+                    DataSnapshot sessionData = dataSnapshot.child("AttendanceReport").child(sessionId);
+                    DataSnapshot studentsData = dataSnapshot.child("Students");
+                    DataSnapshot attendanceData = dataSnapshot.child("attendance");
+
+                    String courseCode = sessionData.child("course_code").getValue(String.class);
+
+                    // Initialize counters
+                    int totalStudents = 0;
+                    int presentCount = 0;
+                    int absentCount = 0;
+
+                    for (DataSnapshot student : studentsData.getChildren()) {
+                        String studentCourseCode = student.child("course_code").getValue(String.class);
+
+                        if (courseCode.equals(studentCourseCode)) {
+                            totalStudents++;
+                            String email = student.child("student_email").getValue(String.class);
+                            boolean isPresent = false;
+
+                            for (DataSnapshot attendance : attendanceData.getChildren()) {
+                                if (email.equals(attendance.child("userEmail").getValue(String.class))
+                                        && sessionData.child("period_date").getValue(String.class)
+                                        .equals(attendance.child("date").getValue(String.class))
+                                        && sessionData.child("period_start_time").getValue(String.class)
+                                        .equals(attendance.child("time").getValue(String.class))) {
+                                    isPresent = true;
+                                    break;
+                                }
+                            }
+
+                            if (isPresent) {
+                                presentCount++;
+                            } else {
+                                absentCount++;
+                            }
+                        }
+                    }
+
+                    // Update the UI with the counts
+                    studentsNumberText.setText(String.valueOf(totalStudents));
+                    presentNumberText.setText(String.valueOf(presentCount));
+                    absentNumberText.setText(String.valueOf(absentCount));
+
+                } catch (Exception e) {
+                    Log.e("Data Error", e.getMessage(), e);
+                    Toast.makeText(getApplicationContext(), "Failed to load attendance data", Toast.LENGTH_SHORT).show();
                 } finally {
                     progressDialog.dismiss();
                 }
