@@ -1,9 +1,13 @@
 package com.example.labmate;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -39,7 +43,9 @@ public class TakeAttendanceActivity extends AppCompatActivity {
                 if (isSelectionValid()) {
                     String selectedSubject = subjectSpinner.getSelectedItem().toString();
 
-                    saveAttendanceSession(selectedSubject);
+                    if (hasLocationPermissions()) {
+                        saveAttendanceSession(selectedSubject);
+                    }
 
                     Intent intent = new Intent(getApplicationContext(), activity_session.class);
 
@@ -93,5 +99,30 @@ public class TakeAttendanceActivity extends AppCompatActivity {
             return wifiInfo.getBSSID();
         }
         return null;
+    }
+
+    private boolean hasLocationPermissions() {
+        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 123; // You can use any value
+
+    private void requestLocationPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                LOCATION_PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                saveAttendanceSession(subjectSpinner.getSelectedItem().toString());
+            } else {
+                Toast.makeText(this, "Please enable Location permissions", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
