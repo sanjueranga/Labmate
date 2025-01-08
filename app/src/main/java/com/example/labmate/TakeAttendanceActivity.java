@@ -78,7 +78,7 @@ public class TakeAttendanceActivity extends AppCompatActivity {
             mDatabase.child("attendance_sessions")
                     .child("UniversityBssid")
                     .setValue(currentBSSID)
-                    .addOnSuccessListener(aVoid -> Log.d("TakeAttendance", "BSSID saved successfully"))
+                    .addOnSuccessListener(aVoid -> Log.d("TakeAttendance", "BSSID saved successfully" + currentBSSID))
                     .addOnFailureListener(e -> Log.e("TakeAttendance", "Failed to save BSSID: " + e.getMessage()));
         } else {
             Toast.makeText(this, "Unable to fetch Wi-Fi BSSID. Make sure you are connected to a network.", Toast.LENGTH_SHORT).show();
@@ -86,9 +86,10 @@ public class TakeAttendanceActivity extends AppCompatActivity {
     }
 
     private String getCurrentBSSID() {
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (wifiManager != null) {
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            Log.d("SubmitAttendance", "Fetched BSSID: " + wifiInfo.getBSSID() + " 2 " + wifiInfo.getSSID() + " 3 "+ wifiInfo.getMacAddress() + " 4 " + wifiInfo.getNetworkId());
             return wifiInfo.getBSSID();
         }
         return null;
