@@ -89,8 +89,8 @@ public class activity_session extends AppCompatActivity {
                     Log.d("report","subject_name: "+subject);
 
                     newReportRef.child("period_date").setValue(formattedDate);
-                    newReportRef.child("period_end_time").setValue(startTime);
-                    newReportRef.child("period_start_time").setValue(s_endTime);
+                    newReportRef.child("period_end_time").setValue(s_endTime);
+                    newReportRef.child("period_start_time").setValue(startTime);
                     newReportRef.child("course_code").setValue(subject);
                 }
             }

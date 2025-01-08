@@ -13,14 +13,11 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,189 +31,123 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class AttendanceReportActivity extends AppCompatActivity{
+public class AttendanceReportActivity extends AppCompatActivity {
 
     private static final int WRITE_EXTERNAL_STORAGE_REQUEST = 1;
     private ProgressDialog progressDialog;
-    private SimpleDateFormat sdf;
-    private String formattedDateTime;
-    private Button myButton;
     private FirebaseDatabase firebaseDatabase;
-    private static Sheet sheet;
-    static private int rowNum;
-    private TextView text_absent_number, text_present_number,text_students_number;
+    private Button downloadButton;
+    private SimpleDateFormat sdf;
+    private int rowNum = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance_report);
 
-        Init();
+        downloadButton = findViewById(R.id.download);
+        progressDialog = new ProgressDialog(this);
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        sdf = new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.US);
 
-        myButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(AttendanceReportActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED ||
-                        ContextCompat.checkSelfPermission(AttendanceReportActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                                != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(AttendanceReportActivity.this,
-                            new String[]{
-                                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                    android.Manifest.permission.READ_EXTERNAL_STORAGE
-                            },
-                            WRITE_EXTERNAL_STORAGE_REQUEST);
-                } else {
-                    formattedDateTime = sdf.format(new Date());
-                    progressDialog.setMessage("Attendance Report\n"+ formattedDateTime + "\nExcel File will be Downloaded to Downloads directory!");
-
-                    progressDialog.show();
-                    exportExcelFile();
-                }
+        downloadButton.setOnClickListener(view -> {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_REQUEST);
+            } else {
+                exportExcelFile();
             }
         });
-    }
-
-    private void Init() {
-        myButton = findViewById(R.id.download);
-        text_absent_number = findViewById(R.id.text_absent_number);
-        text_present_number = findViewById(R.id.text_present_number);
-        text_students_number = findViewById(R.id.text_students_number);
-
-        progressDialog = new ProgressDialog(AttendanceReportActivity.this);
-        progressDialog.setTitle("Creating Excel File...");
-        progressDialog.setCancelable(false);
-        sdf = new SimpleDateFormat("dd MM yyyy HH:mm", Locale.US);
-        firebaseDatabase = FirebaseDatabase.getInstance();
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == WRITE_EXTERNAL_STORAGE_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                exportExcelFile();
-            } else {
-                Toast.makeText(this, "Permission denied. Cannot create Excel file.", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     private void exportExcelFile() {
         DatabaseReference databaseReference = firebaseDatabase.getReference();
+        Intent intent = getIntent();
+        String sessionId = intent.getStringExtra("sessionId");
+
+        if (sessionId == null || sessionId.isEmpty()) {
+            Toast.makeText(this, "Invalid session ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressDialog.setMessage("Generating report...");
+        progressDialog.show();
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d("final report",dataSnapshot.toString());
-                if (dataSnapshot.exists()) {
-                    try {
-                        File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                        sdf = new SimpleDateFormat("dd-MM-yyyy_HH-mm", Locale.US);
-                        formattedDateTime = sdf.format(new Date());
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                try {
+                    DataSnapshot sessionData = dataSnapshot.child("AttendanceReport").child(sessionId);
+                    DataSnapshot studentsData = dataSnapshot.child("Students");
+                    DataSnapshot attendanceData = dataSnapshot.child("attendance");
 
-                        File file = new File(downloadDir, "AttendanceReport_" + formattedDateTime + ".xlsx");
-                        Workbook workbook = new XSSFWorkbook();
-                        sheet = workbook.createSheet("Data");
-                        sheet.setDefaultColumnWidth(24);
+                    File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    String fileName = "AttendanceReport_" + sdf.format(new Date()) + ".xlsx";
+                    File file = new File(downloadDir, fileName);
 
-                        Intent intent = getIntent();
-                        String sessionId = intent.getStringExtra("sessionId");
+                    Workbook workbook = new XSSFWorkbook();
+                    Sheet sheet = workbook.createSheet("Attendance Report");
 
-                        Log.d("final report","session id" +sessionId);
-                        for (DataSnapshot dataSnapshot1 : dataSnapshot.child("AttendanceReport").child(sessionId).getChildren()) {
-                            Row subjectInfoRow = sheet.createRow(rowNum++);
-                            String key = dataSnapshot1.getKey();
-                            String value = dataSnapshot1.getValue().toString();
+                    // Create header row
+                    Row headerRow = sheet.createRow(rowNum++);
+                    headerRow.createCell(0).setCellValue("Enrollment No");
+                    headerRow.createCell(1).setCellValue("Student Name");
+                    headerRow.createCell(2).setCellValue("Email");
+                    headerRow.createCell(3).setCellValue("Attendance Status");
 
-                            subjectInfoRow.createCell(0).setCellValue(key);
-                            subjectInfoRow.createCell(1).setCellValue(value);
-                        }
+                    // Fetch session course code
+                    String courseCode = sessionData.child("course_code").getValue(String.class);
 
-                        // Add a blank row
-                        rowNum++;
+                    // Populate student data
+                    for (DataSnapshot student : studentsData.getChildren()) {
+                        String studentCourseCode = student.child("course_code").getValue(String.class);
 
-                        // Add header row for students
-                        Row studentHeaderRow = sheet.createRow(rowNum++);
-                        studentHeaderRow.createCell(0).setCellValue("Student Enrollment");
-                        studentHeaderRow.createCell(1).setCellValue("Student Name");
-                        studentHeaderRow.createCell(2).setCellValue("Student Email");
-                        studentHeaderRow.createCell(3).setCellValue("Division");
-                        studentHeaderRow.createCell(4).setCellValue("Group");
-                        studentHeaderRow.createCell(5).setCellValue("Attendance");
+                        // Only include students for the session's course
+                        if (courseCode.equals(studentCourseCode)) {
+                            String enrollmentNo = student.getKey();
+                            String name = student.child("student_name").getValue(String.class);
+                            String email = student.child("student_email").getValue(String.class);
+                            String attendanceStatus = "Absent"; // Default to absent
 
-                        Row studentRow;
-                        for (DataSnapshot enrollmentSnapshot : dataSnapshot.child("Students").getChildren()) {
-                            studentRow = sheet.createRow(rowNum++);
-                            String enrollmentNo = enrollmentSnapshot.getKey().toString();
-                            studentRow.createCell(0).setCellValue(enrollmentNo);
-                            studentRow.createCell(1).setCellValue(dataSnapshot.child("Students").child(enrollmentNo).child("student_name").getValue(String.class));
-                            studentRow.createCell(2).setCellValue(dataSnapshot.child("Students").child(enrollmentNo).child("student_email").getValue(String.class));
-                            studentRow.createCell(3).setCellValue(dataSnapshot.child("Students").child(enrollmentNo).child("Division").getValue().toString());
-                            studentRow.createCell(4).setCellValue(dataSnapshot.child("Students").child(enrollmentNo).child("Group").getValue().toString());
-
-                            String attendanceStatus = dataSnapshot.child("Students").child(enrollmentNo)
-                                    .child("Attendance")
-                                    .child(sessionId)
-                                    .getValue(String.class);
-
-                            if(attendanceStatus == null || attendanceStatus.equals("")){
-                                attendanceStatus = "A";
-                                setAbsent(enrollmentNo,sessionId);
-                            }
-                            studentRow.createCell(5).setCellValue(attendanceStatus);
-                        }
-
-                        FileOutputStream fileOut = new FileOutputStream(file);
-                        workbook.write(fileOut);
-                        fileOut.close();
-                        workbook.close();
-
-                        Toast.makeText(getApplicationContext(), "Excel file created", Toast.LENGTH_SHORT).show();
-                        progressDialog.dismiss();
-
-                    } catch (IOException e) {
-                        progressDialog.dismiss();
-                        Log.d("aryanranderiya", e.toString());
-                        Toast.makeText(getApplicationContext(), "Error creating Excel file", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), "Firebase Data retrieval error", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private void setAbsent(String enrollmentNo, String sessionId) {
-        DatabaseReference studentsReference = firebaseDatabase.getReference().child("Students")
-                .child(enrollmentNo)
-                .child("Attendance")
-                .child(sessionId);
-
-        studentsReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) {
-                    studentsReference.setValue("A")
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        System.out.println("Successfully set record to Absent");
-                                    } else {
-                                        System.out.println("Could not set record to Absent");
-                                    }
+                            for (DataSnapshot attendance : attendanceData.getChildren()) {
+                                if (email.equals(attendance.child("userEmail").getValue(String.class))
+                                        && sessionData.child("period_date").getValue(String.class)
+                                        .equals(attendance.child("date").getValue(String.class))
+                                        && sessionData.child("period_start_time").getValue(String.class)
+                                        .equals(attendance.child("time").getValue(String.class)))
+                                {
+                                    attendanceStatus = "Present";
+                                    break;
                                 }
-                            });
+                            }
+
+                            Row row = sheet.createRow(rowNum++);
+                            row.createCell(0).setCellValue(enrollmentNo);
+                            row.createCell(1).setCellValue(name);
+                            row.createCell(2).setCellValue(email);
+                            row.createCell(3).setCellValue(attendanceStatus);
+                        }
+                    }
+
+                    FileOutputStream fileOut = new FileOutputStream(file);
+                    workbook.write(fileOut);
+                    fileOut.close();
+                    workbook.close();
+
+                    Toast.makeText(getApplicationContext(), "Report saved to Downloads", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Log.e("Export Error", e.getMessage(), e);
+                    Toast.makeText(getApplicationContext(), "Failed to create Excel file", Toast.LENGTH_SHORT).show();
+                } finally {
+                    progressDialog.dismiss();
                 }
             }
+
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError error) {
+                progressDialog.dismiss();
+                Toast.makeText(getApplicationContext(), "Failed to retrieve data", Toast.LENGTH_SHORT).show();
             }
         });
     }
