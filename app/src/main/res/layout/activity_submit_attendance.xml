@@ -18,11 +18,6 @@
             android:layout_height="match_parent"
             android:src="@drawable/icon_error"
             android:layout_weight="1"/>
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/icon_wifi_bad"
-            android:layout_weight="1"/>
     </LinearLayout>
 <TextView
     android:layout_width="match_parent"

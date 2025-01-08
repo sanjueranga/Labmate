@@ -3,9 +3,9 @@
 
     <style name="Theme.ImpromptuSSIPHackathon2023" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#00bbff</item>
+        <item name="colorPrimary">#800000</item>
         <item name="colorPrimaryVariant">@color/main_700</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/white</item>                  <!-- Text Color -->
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/white</item>
         <item name="colorSecondaryVariant">@color/white</item>

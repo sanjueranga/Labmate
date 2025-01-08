@@ -13,18 +13,18 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        android:src="@drawable/submitted" />
+        android:src="@drawable/thumbs_up" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="10dp"
         android:layout_marginVertical="10dp"
-        android:fontFamily="serif"
+        android:fontFamily="monospace"
         android:gravity="center"
         android:text="Your presence has been recorded!"
         android:textColor="@color/black"
-        android:textSize="40sp"
+        android:textSize="30sp"
         android:textStyle="bold|italic" />
 
     <Button
